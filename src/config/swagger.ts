@@ -24,8 +24,9 @@ const swaggerOptions: SwaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Development server'
+        url: 'https://api-node-ecommerce-0mh7.onrender.com',
+        description: 'production server'
+
       },
       {
         url: 'https://api.ecommerce.com',
