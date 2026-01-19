@@ -120,49 +120,6 @@ router.post('/forgot-password', AuthController.forgotPassword);
 
 /**
  * @swagger
- * /api/auth/reset-password/{token}:
- *   put:
- *     summary: Reset password with token
- *     tags: [Authentication]
- *     description: Reset user password using the token received via email
- *     parameters:
- *       - in: path
- *         name: token
- *         required: true
- *         schema:
- *           type: string
- *         description: Password reset token from email
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - password
- *             properties:
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 example: NewPassword123!
- *     responses:
- *       200:
- *         description: Password reset successful
- *         content:
- *           application/json:
- *             example:
- *               success: true
- *               message: Password reset successful
- *       400:
- *         description: Invalid or expired token
- *       404:
- *         $ref: '#/components/responses/NotFoundError'
- */
-router.put('/reset-password/:token', AuthController.resetPassword);
-
-/**
- * @swagger
  * /api/auth/profile:
  *   get:
  *     summary: Get user profile
