@@ -7,6 +7,129 @@ const router = Router();
 
 /**
  * @swagger
+ * /api/products:
+ *   get:
+ *     summary: Get all products
+ *     tags: [Products]
+ *     description: Retrieve a list of all products with optional filtering and pagination
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filter by category ID
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *         description: Minimum price filter
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *         description: Maximum price filter
+ *       - in: query
+ *         name: inStock
+ *         schema:
+ *           type: boolean
+ *         description: Filter by stock availability
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by product name or description
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *           default: 10
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: List of products retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 count:
+ *                   type: number
+ *                   example: 8
+ *                 total:
+ *                   type: number
+ *                   example: 25
+ *                 products:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Product'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: number
+ *                       example: 1
+ *                     limit:
+ *                       type: number
+ *                       example: 10
+ *                     total:
+ *                       type: number
+ *                       example: 25
+ *                     pages:
+ *                       type: number
+ *                       example: 3
+ *       500:
+ *         description: Server error
+ */
+router.get("/", async (req: Request, res: Response) => {
+  try {
+    const filters: any = {};
+    const pagination: any = {};
+    
+    if (req.query.category) {
+      filters.category = req.query.category;
+    }
+    if (req.query.minPrice) {
+      filters.minPrice = Number(req.query.minPrice);
+    }
+    if (req.query.maxPrice) {
+      filters.maxPrice = Number(req.query.maxPrice);
+    }
+    if (req.query.inStock !== undefined) {
+      filters.inStock = req.query.inStock === 'true';
+    }
+    if (req.query.search) {
+      filters.search = req.query.search;
+    }
+    if (req.query.page) {
+      pagination.page = Number(req.query.page);
+    }
+    if (req.query.limit) {
+      pagination.limit = Number(req.query.limit);
+    }
+    
+    const result = await ProductService.getAllProducts(filters, pagination);
+    res.json({
+      success: true,
+      count: result.products.length,
+      total: result.pagination.total,
+      ...result
+    });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error fetching products', error: error.message });
+  }
+});
+
+/**
+ * @swagger
  * /api/products/{id}:
  *   get:
  *     summary: Get product by ID
@@ -200,6 +323,124 @@ router.delete("/:id", authenticate, requireVendorOrAdmin, async (req: AuthReques
       return res.status(400).json({ message: 'Invalid product ID format' });
     }
     res.status(500).json({ message: 'Error deleting product', error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   put:
+ *     summary: Update a product
+ *     tags: [Products]
+ *     description: Update an existing product. Vendors can only update their own products, admins can update any product.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *         example: 507f1f77bcf86cd799439011
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Updated Wireless Headphones
+ *               price:
+ *                 type: number
+ *                 example: 89.99
+ *               description:
+ *                 type: string
+ *                 example: Updated description for wireless headphones
+ *               category:
+ *                 type: string
+ *                 example: 507f1f77bcf86cd799439011
+ *               inStock:
+ *                 type: boolean
+ *                 example: true
+ *               quantity:
+ *                 type: number
+ *                 example: 75
+ *     responses:
+ *       200:
+ *         description: Product updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Product updated successfully
+ *                 product:
+ *                   $ref: '#/components/schemas/Product'
+ *       400:
+ *         description: Bad request - Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - You can only update your own products
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
+router.put("/:id", authenticate, requireVendorOrAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const product = await ProductService.getProductById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Check ownership for vendors
+    if (req.user!.role === 'vendor') {
+      if (!product.createdBy || product.createdBy.toString() !== req.user!.id) {
+        return res.status(403).json({ 
+          message: "Access denied. You can only update your own products." 
+        });
+      }
+    }
+
+    const { name, price, description, category, inStock, quantity } = req.body;
+
+    // Validation
+    if (price !== undefined && (typeof price !== "number" || price <= 0)) {
+      return res.status(400).json({ message: "price must be a number greater than 0" });
+    }
+
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (price !== undefined) updateData.price = price;
+    if (description !== undefined) updateData.description = description;
+    if (category !== undefined) updateData.category = category;
+    if (inStock !== undefined) updateData.inStock = inStock;
+    if (quantity !== undefined) updateData.quantity = quantity;
+
+    const updatedProduct = await ProductService.updateProduct(req.params.id, updateData);
+    
+    res.json({
+      success: true,
+      message: "Product updated successfully",
+      product: updatedProduct
+    });
+  } catch (error: any) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ message: 'Validation error', errors: error.errors });
+    }
+    if (error.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid product ID format' });
+    }
+    res.status(500).json({ message: 'Error updating product', error: error.message });
   }
 });
 
