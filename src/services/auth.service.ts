@@ -108,25 +108,21 @@ export const forgotPassword = async (email: string): Promise<string> => {
     throw new Error('No user found with this email');
   }
 
-  // Generate reset token
   const resetToken = user.generateResetToken();
   await user.save();
 
   return resetToken;
 };
 
-// Reset password with token
 export const resetPassword = async (
   resetToken: string,
   newPassword: string
 ): Promise<void> => {
-  // Hash the token to compare with stored hash
   const hashedToken = crypto
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
 
-  // Find user with valid reset token
   const user = await User.findOne({
     resetPasswordToken: hashedToken,
     resetPasswordExpire: { $gt: Date.now() }
@@ -136,25 +132,21 @@ export const resetPassword = async (
     throw new Error('Invalid or expired reset token');
   }
 
-  // Set new password
   user.password = newPassword;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();
 };
 
-// Get all users (admin function)
 export const getAllUsers = async (): Promise<IUser[]> => {
   return await User.find().select('-password');
 };
 
-// Delete user (admin function)
 export const deleteUser = async (userId: string): Promise<boolean> => {
   const result = await User.findByIdAndDelete(userId);
   return !!result;
 };
 
-// Update user status (admin function)
 export const updateUserStatus = async (
   userId: string,
   status: 'active' | 'inactive' | 'pending'
