@@ -5,6 +5,33 @@ import mongoose from 'mongoose';
 
 const router = Router();
 
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   get:
+ *     summary: Get product by ID
+ *     tags: [Products]
+ *     description: Retrieve a single product by its ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *         example: 507f1f77bcf86cd799439011
+ *     responses:
+ *       200:
+ *         description: Product found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const product = await ProductService.getProductById(req.params.id);
@@ -19,7 +46,60 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-
+/**
+ * @swagger
+ * /api/products:
+ *   post:
+ *     summary: Create a new product
+ *     tags: [Products]
+ *     description: Create a new product (Vendor or Admin only). Vendors can only manage their own products.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - price
+ *               - category
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Wireless Headphones
+ *               price:
+ *                 type: number
+ *                 example: 99.99
+ *               description:
+ *                 type: string
+ *                 example: High-quality wireless headphones with noise cancellation
+ *               category:
+ *                 type: string
+ *                 example: 507f1f77bcf86cd799439011
+ *               inStock:
+ *                 type: boolean
+ *                 example: true
+ *               quantity:
+ *                 type: number
+ *                 example: 50
+ *     responses:
+ *       201:
+ *         description: Product created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       400:
+ *         description: Bad request - Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Vendor or Admin access required
+ *       500:
+ *         description: Server error
+ */
 router.post("/", authenticate, requireVendorOrAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { name, price, description, category, inStock, quantity } = req.body;
@@ -54,7 +134,46 @@ router.post("/", authenticate, requireVendorOrAdmin, async (req: AuthRequest, re
   }
 });
 
-
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   delete:
+ *     summary: Delete a product
+ *     tags: [Products]
+ *     description: Delete a product by ID. Vendors can only delete their own products, admins can delete any product.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *         example: 507f1f77bcf86cd799439011
+ *     responses:
+ *       200:
+ *         description: Product deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Product deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - You can only delete your own products
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
 router.delete("/:id", authenticate, requireVendorOrAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const product = await ProductService.getProductById(req.params.id);
@@ -84,7 +203,33 @@ router.delete("/:id", authenticate, requireVendorOrAdmin, async (req: AuthReques
   }
 });
 
-
+/**
+ * @swagger
+ * /api/products/category/{category}:
+ *   get:
+ *     summary: Get products by category
+ *     tags: [Products]
+ *     description: Retrieve all products in a specific category
+ *     parameters:
+ *       - in: path
+ *         name: category
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Category ID
+ *         example: 507f1f77bcf86cd799439011
+ *     responses:
+ *       200:
+ *         description: List of products in the category
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
+ *       500:
+ *         description: Server error
+ */
 router.get("/category/:category", async (req: Request, res: Response) => {
   try {
     const products = await ProductService.getProductsByCategory(req.params.category);
@@ -94,6 +239,32 @@ router.get("/category/:category", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/products/stats/categories:
+ *   get:
+ *     summary: Get product statistics by category
+ *     tags: [Products]
+ *     description: Get aggregated statistics showing product count per category
+ *     responses:
+ *       200:
+ *         description: Category statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     example: Electronics
+ *                   count:
+ *                     type: number
+ *                     example: 15
+ *       500:
+ *         description: Server error
+ */
 router.get("/stats/categories", async (req: Request, res: Response) => {
   try {
     const stats = await ProductService.getCategoryStats();

@@ -45,7 +45,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: 'E-Commerce API Documentation'
 }));
 
-// API Routes
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/products", productRouter);

@@ -89,18 +89,15 @@ export const changePassword = async (
     throw new Error('User not found');
   }
 
-  // Verify current password
   const isPasswordValid = await user.comparePassword(currentPassword);
   if (!isPasswordValid) {
     throw new Error('Current password is incorrect');
   }
 
-  // Update password
   user.password = newPassword;
   await user.save();
 };
 
-// Forgot password - generate reset token
 export const forgotPassword = async (email: string): Promise<string> => {
   const user = await User.findOne({ email });
   
