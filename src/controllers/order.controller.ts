@@ -1,6 +1,8 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import * as OrderService from '../services/order.service';
+import * as AuthService from '../services/auth.service';
+import { sendEmail, emailTemplates } from '../services/email.service';
 
 // Customer: Create order from cart
 export const createOrder = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -11,6 +13,15 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
     }
 
     const order = await OrderService.createOrderFromCart(req.user.id);
+
+    // Send order placed email
+    const user = await AuthService.getUserProfile(req.user.id);
+    if (user) {
+      sendEmail(
+        user.email, 
+        emailTemplates.orderPlaced(user.firstName, order._id.toString(), order.totalAmount, order.items)
+      );
+    }
 
     res.status(201).json({
       success: true,
@@ -176,6 +187,20 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response): Promis
     }
 
     const order = await OrderService.updateOrderStatus(id, status);
+
+    if (!order) {
+      res.status(404).json({ message: 'Order not found' });
+      return;
+    }
+
+    // Send order status update email
+    const user = await AuthService.getUserProfile(order.userId.toString());
+    if (user) {
+      sendEmail(
+        user.email,
+        emailTemplates.orderStatusUpdate(user.firstName, order._id.toString(), status)
+      );
+    }
 
     res.status(200).json({
       success: true,

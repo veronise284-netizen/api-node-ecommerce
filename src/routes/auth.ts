@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as AuthController from '../controllers/auth.controller';
 import { authenticate } from '../middlewares/auth.middleware';
+import { upload } from '../middlewares/upload.middleware';
 
 const router = Router();
 
@@ -188,6 +189,54 @@ router.get('/profile', authenticate, AuthController.getProfile);
  *         $ref: '#/components/responses/BadRequestError'
  */
 router.put('/profile', authenticate, AuthController.updateProfile);
+
+/**
+ * @swagger
+ * /api/auth/profile/picture:
+ *   put:
+ *     summary: Upload profile picture
+ *     tags: [Authentication]
+ *     description: Upload or update user profile picture (max 1MB, images only)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - profilePicture
+ *             properties:
+ *               profilePicture:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile picture file (JPEG, PNG, GIF, WEBP - max 1MB)
+ *     responses:
+ *       200:
+ *         description: Profile picture uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Profile picture uploaded successfully
+ *                 profilePicture:
+ *                   type: string
+ *                   example: http://localhost:3000/uploads/profile-1234567890.jpg
+ *       400:
+ *         description: No file uploaded or invalid file type
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.put('/profile/picture', authenticate, upload.single('profilePicture'), AuthController.uploadProfilePicture);
 
 /**
  * @swagger

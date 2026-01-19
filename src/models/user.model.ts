@@ -11,6 +11,7 @@ export interface IUser extends Document {
   age?: number;
   status: 'active' | 'inactive' | 'pending';
   role: 'admin' | 'vendor' | 'customer';
+  profilePicture?: string;
   resetPasswordToken?: string;
   resetPasswordExpire?: Date;
   createdAt?: Date;
@@ -72,6 +73,10 @@ const UserSchema = new Schema<IUser>({
     },
     required: [true, 'Role is required'],
     default: 'customer'
+  },
+  profilePicture: {
+    type: String,
+    default: null
   },
   resetPasswordToken: {
     type: String

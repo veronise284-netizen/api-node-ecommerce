@@ -98,7 +98,7 @@ export const changePassword = async (
   await user.save();
 };
 
-export const forgotPassword = async (email: string): Promise<string> => {
+export const forgotPassword = async (email: string): Promise<{ user: IUser; resetToken: string }> => {
   const user = await User.findOne({ email });
   
   if (!user) {
@@ -108,7 +108,7 @@ export const forgotPassword = async (email: string): Promise<string> => {
   const resetToken = user.generateResetToken();
   await user.save();
 
-  return resetToken;
+  return { user, resetToken };
 };
 
 export const resetPassword = async (

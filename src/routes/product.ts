@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
 import * as ProductService from '../services/product.service';
+import * as ProductController from '../controllers/product.controller';
 import { authenticate, requireVendorOrAdmin, AuthRequest } from '../middlewares/auth.middleware';
+import { upload } from '../middlewares/upload.middleware';
 import mongoose from 'mongoose';
 
 const router = Router();
@@ -514,6 +516,125 @@ router.get("/stats/categories", async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error fetching category stats', error: error.message });
   }
 });
+
+/**
+ * @swagger
+ * /api/products/{id}/images:
+ *   post:
+ *     summary: Upload product images
+ *     tags: [Products]
+ *     description: Upload one or more images for a product (Vendor or Admin only). Vendors can only upload images for their own products. Max 5 images per request, 1MB each.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *         example: 507f1f77bcf86cd799439011
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - images
+ *             properties:
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Product image files (JPEG, PNG, GIF, WEBP - max 1MB each)
+ *     responses:
+ *       200:
+ *         description: Images uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: 2 image(s) uploaded successfully
+ *                 images:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["http://localhost:3000/uploads/product-1234567890.jpg"]
+ *       400:
+ *         description: No files uploaded or invalid file
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - You can only upload images for your own products
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
+router.post("/:id/images", authenticate, requireVendorOrAdmin, upload.array('images', 5), ProductController.uploadProductImages);
+
+/**
+ * @swagger
+ * /api/products/{id}/images/{imageIndex}:
+ *   delete:
+ *     summary: Delete a product image
+ *     tags: [Products]
+ *     description: Delete a specific product image by index. Vendors can only delete images from their own products.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *         example: 507f1f77bcf86cd799439011
+ *       - in: path
+ *         name: imageIndex
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Image index (0-based)
+ *         example: 0
+ *     responses:
+ *       200:
+ *         description: Image deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Image deleted successfully
+ *                 images:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       400:
+ *         description: Invalid image index
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/:id/images/:imageIndex", authenticate, requireVendorOrAdmin, ProductController.deleteProductImage);
 
 export default router;
 

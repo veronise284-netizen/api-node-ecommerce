@@ -7,6 +7,7 @@ export interface IProduct extends Document {
   category: string;
   inStock: boolean;
   quantity: number;
+  images?: string[];
   createdBy?: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
@@ -45,6 +46,9 @@ const ProductSchema = new Schema<IProduct>({
     default: 0,
     min: [0, 'Quantity cannot be negative']
   },
+  images: [{
+    type: String
+  }],
   createdBy: {
     type: Schema.Types.ObjectId,
     ref: 'User'

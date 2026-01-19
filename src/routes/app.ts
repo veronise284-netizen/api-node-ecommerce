@@ -1,5 +1,6 @@
 import express from "express";
 import morgan from "morgan";
+import path from "path";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "../config/swagger";
 import logger from "../middlewares/loggers";
@@ -15,6 +16,9 @@ const app = express();
 
 app.use(morgan("dev"));
 app.use(express.json());
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
 
 app.use((req, res, next) => {
   if (req.method === "POST" || req.method === "PUT") {

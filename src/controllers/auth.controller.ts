@@ -1,6 +1,8 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import * as AuthService from '../services/auth.service';
+import { sendEmail, emailTemplates } from '../services/email.service';
+import { User } from '../models/user.model';
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -25,6 +27,9 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
       age,
       role
     });
+
+    // Send welcome email (don't wait for it)
+    sendEmail(user.email, emailTemplates.welcome(user.firstName));
 
     res.status(201).json({
       success: true,
@@ -198,6 +203,12 @@ export const changePassword = async (req: AuthRequest, res: Response): Promise<v
 
     await AuthService.changePassword(req.user.id, currentPassword, newPassword);
 
+    // Send password changed confirmation email
+    const user = await AuthService.getUserProfile(req.user.id);
+    if (user) {
+      sendEmail(user.email, emailTemplates.passwordChanged(user.firstName));
+    }
+
     res.status(200).json({
       success: true,
       message: 'Password changed successfully'
@@ -224,14 +235,19 @@ export const forgotPassword = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    const resetToken = await AuthService.forgotPassword(email);
+    const { user, resetToken } = await AuthService.forgotPassword(email);
 
+    // Send password reset email
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const resetUrl = `${protocol}://${host}/api/auth/reset-password/${resetToken}`;
+    sendEmail(user.email, emailTemplates.passwordReset(user.firstName, resetToken, resetUrl));
     
     res.status(200).json({
       success: true,
-      message: 'Password reset token generated',
-      resetToken, 
-      note: 'In production, this token would be sent via email'
+      message: 'Password reset link sent to email',
+      // For development/testing only - remove in production
+      resetToken
     });
   } catch (error: any) {
     if (error.message === 'No user found with this email') {
@@ -374,6 +390,51 @@ export const updateUser = async (req: AuthRequest, res: Response): Promise<void>
     }
     res.status(500).json({ 
       message: 'Error updating user', 
+      error: error.message 
+    });
+  }
+};
+
+// @desc    Upload profile picture
+// @route   PUT /api/auth/profile/picture
+// @access  Private
+export const uploadProfilePicture = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: 'No file uploaded' });
+      return;
+    }
+
+    const userId = req.user!.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    // Delete old profile picture if exists
+    if (user.profilePicture) {
+      const { deleteFile } = require('../middlewares/upload.middleware');
+      const oldFilename = user.profilePicture.split('/').pop();
+      if (oldFilename) {
+        deleteFile(oldFilename);
+      }
+    }
+
+    // Save new profile picture URL
+    const { getFileUrl } = require('../middlewares/upload.middleware');
+    user.profilePicture = getFileUrl(req, req.file.filename);
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile picture uploaded successfully',
+      profilePicture: user.profilePicture
+    });
+  } catch (error: any) {
+    res.status(500).json({ 
+      message: 'Error uploading profile picture', 
       error: error.message 
     });
   }
