@@ -169,7 +169,6 @@ export const requireRole = (...roles: Array<'admin' | 'vendor' | 'customer'>) =>
   };
 };
 
-// Customer role middleware
 export const requireCustomer = (
   req: AuthRequest,
   res: Response,
@@ -190,7 +189,6 @@ export const requireCustomer = (
   next();
 };
 
-// Middleware to ensure user can only access their own resources
 export const requireSelfOrAdmin = (
   req: AuthRequest,
   res: Response,

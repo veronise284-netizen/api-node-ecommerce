@@ -7,7 +7,7 @@ import * as AuthService from '../services/auth.service';
 // @access  Public
 export const register = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { firstName, lastName, email, password, age } = req.body;
+    const { firstName, lastName, email, password, age, role } = req.body;
 
     // Validation
     if (!firstName || !lastName || !email || !password) {
@@ -22,7 +22,8 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
       lastName,
       email,
       password,
-      age
+      age,
+      role
     });
 
     res.status(201).json({

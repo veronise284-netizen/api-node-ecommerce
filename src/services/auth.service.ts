@@ -8,6 +8,7 @@ export const registerUser = async (userData: {
   email: string;
   password: string;
   age?: number;
+  role?: 'customer' | 'vendor' | 'admin';
 }): Promise<{ user: IUser; token: string }> => {
   // Check if user exists
   const existingUser = await User.findOne({ email: userData.email });

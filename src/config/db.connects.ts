@@ -15,14 +15,13 @@ export const connectDB = async (): Promise<void> => {
     
     // Connection event listeners
     mongoose.connection.on('error', (error) => {
-      console.error('❌ MongoDB connection error:', error);
+      console.error(' MongoDB connection error:', error);
     });
 
     mongoose.connection.on('disconnected', () => {
-      console.log('⚠️  MongoDB disconnected');
+      console.log(' MongoDB disconnected');
     });
 
-    // Graceful shutdown
     process.on('SIGINT', async () => {
       await mongoose.connection.close();
       console.log('MongoDB connection closed through app termination');
@@ -30,7 +29,7 @@ export const connectDB = async (): Promise<void> => {
     });
 
   } catch (error) {
-    console.error('❌ Database connection failed:', error);
+    console.error(' Database connection failed:', error);
     process.exit(1);
   }
 };

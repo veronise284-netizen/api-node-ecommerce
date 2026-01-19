@@ -134,9 +134,9 @@ const swaggerOptions: SwaggerOptions = {
             },
             role: {
               type: 'string',
-              enum: ['vendor', 'customer'],
+              enum: ['admin', 'vendor', 'customer'],
               example: 'customer',
-              description: 'Optional. Defaults to customer. Admin role cannot be assigned via registration.'
+              description: 'Optional. Defaults to customer if not specified.'
             }
           }
         },

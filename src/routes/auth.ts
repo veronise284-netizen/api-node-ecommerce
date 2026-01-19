@@ -10,7 +10,7 @@ const router = Router();
  *   post:
  *     summary: Register a new user
  *     tags: [Authentication]
- *     description: Create a new user account. Role defaults to 'customer' if not specified. Admin role cannot be assigned via registration.
+ *     description: Create a new user account with specified role (admin, vendor, or customer). Role defaults to 'customer' if not specified.
  *     requestBody:
  *       required: true
  *       content:

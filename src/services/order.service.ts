@@ -2,17 +2,13 @@ import { Order, IOrder } from '../models/order.model';
 import * as CartService from './cart.service';
 import mongoose from 'mongoose';
 
-// Create order from user's cart
 export const createOrderFromCart = async (userId: string): Promise<IOrder> => {
-  // Get user's cart with populated product details
   const cart = await CartService.getCart(userId);
 
-  // Validate cart exists and has items
   if (!cart || !cart.items || cart.items.length === 0) {
     throw new Error('Cannot create order from empty cart');
   }
 
-  // Create order items snapshot from cart
   const orderItems = cart.items.map((item: any) => {
     const product = item.productId; // This is populated
     return {
@@ -24,10 +20,8 @@ export const createOrderFromCart = async (userId: string): Promise<IOrder> => {
     };
   });
 
-  // Calculate total amount
   const totalAmount = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
 
-  // Create the order
   const order = await Order.create({
     userId: new mongoose.Types.ObjectId(userId),
     items: orderItems,
@@ -35,25 +29,21 @@ export const createOrderFromCart = async (userId: string): Promise<IOrder> => {
     status: 'pending'
   });
 
-  // Clear the cart after order is created
   await CartService.clearCart(userId);
 
   return order;
 };
 
-// Get all orders for a specific user
 export const getUserOrders = async (userId: string): Promise<IOrder[]> => {
   return await Order.find({ userId: new mongoose.Types.ObjectId(userId) })
     .sort({ createdAt: -1 })
     .exec();
 };
 
-// Get single order by ID
 export const getOrderById = async (orderId: string): Promise<IOrder | null> => {
   return await Order.findById(orderId).exec();
 };
 
-// Cancel order (only if pending)
 export const cancelOrder = async (orderId: string, userId: string): Promise<IOrder | null> => {
   const order = await Order.findById(orderId);
 
@@ -61,12 +51,10 @@ export const cancelOrder = async (orderId: string, userId: string): Promise<IOrd
     throw new Error('Order not found');
   }
 
-  // Check ownership
   if (order.userId.toString() !== userId) {
     throw new Error('Unauthorized to cancel this order');
   }
 
-  // Can only cancel pending orders
   if (order.status !== 'pending') {
     throw new Error(`Cannot cancel order with status: ${order.status}. Only pending orders can be cancelled.`);
   }
@@ -75,7 +63,6 @@ export const cancelOrder = async (orderId: string, userId: string): Promise<IOrd
   return await order.save();
 };
 
-// Admin: Get all orders with optional filters
 export const getAllOrders = async (filters: {
   status?: string;
   userId?: string;
