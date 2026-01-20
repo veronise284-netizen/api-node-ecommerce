@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middlewares/auth.middleware';
 import * as OrderService from '../services/order.service';
 import * as AuthService from '../services/auth.service';
-import { sendEmail, emailTemplates } from '../services/email.service';
+import { sendOrderConfirmationEmail, sendOrderStatusUpdateEmail } from '../services/email.service';
 
 // Customer: Create order from cart
 export const createOrder = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -17,10 +17,14 @@ export const createOrder = async (req: AuthRequest, res: Response): Promise<void
     // Send order placed email
     const user = await AuthService.getUserProfile(req.user.id);
     if (user) {
-      sendEmail(
+      sendOrderConfirmationEmail(
         user.email, 
-        emailTemplates.orderPlaced(user.firstName, order._id.toString(), order.totalAmount, order.items)
-      );
+        user.firstName, 
+        order._id.toString(), 
+        order.totalAmount
+      ).catch(err => {
+        console.error('Failed to send order confirmation email:', err);
+      });
     }
 
     res.status(201).json({
@@ -196,10 +200,14 @@ export const updateOrderStatus = async (req: AuthRequest, res: Response): Promis
     // Send order status update email
     const user = await AuthService.getUserProfile(order.userId.toString());
     if (user) {
-      sendEmail(
+      sendOrderStatusUpdateEmail(
         user.email,
-        emailTemplates.orderStatusUpdate(user.firstName, order._id.toString(), status)
-      );
+        user.firstName,
+        order._id.toString(),
+        status
+      ).catch(err => {
+        console.error('Failed to send order status update email:', err);
+      });
     }
 
     res.status(200).json({
