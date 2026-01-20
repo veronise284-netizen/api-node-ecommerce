@@ -1,9 +1,11 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
+
+const port = parseInt(process.env.EMAIL_PORT || "465");
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT || '465'),
-  secure: process.env.EMAIL_PORT === '465', // true for 465, false for 587
+  host: process.env.EMAIL_HOST || "smtp.gmail.com",
+  port,
+  secure: port === 465, // true for 465, false for 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -12,7 +14,7 @@ const transporter = nodemailer.createTransport({
 
 export const emailTemplates = {
   welcome: (firstName: string) => ({
-    subject: 'Welcome to E-Commerce API',
+    subject: "Welcome to E-Commerce API",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Welcome ${firstName}! 🎉</h2>
@@ -26,7 +28,7 @@ export const emailTemplates = {
   }),
 
   passwordReset: (firstName: string, resetToken: string, resetUrl: string) => ({
-    subject: 'Password Reset Request',
+    subject: "Password Reset Request",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Password Reset Request</h2>
@@ -43,7 +45,7 @@ export const emailTemplates = {
   }),
 
   passwordChanged: (firstName: string) => ({
-    subject: 'Password Changed Successfully',
+    subject: "Password Changed Successfully",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Password Changed ✓</h2>
@@ -86,9 +88,9 @@ export const emailTemplates = {
           <p><strong>Order ID:</strong> #${orderId}</p>
           <p><strong>New Status:</strong> <span style="color: #007bff; font-weight: bold;">${status.toUpperCase()}</span></p>
         </div>
-        ${status === 'shipped' ? '<p>Your order is on its way! 🚚</p>' : ''}
-        ${status === 'delivered' ? '<p>Your order has been delivered! Enjoy your purchase! 🎉</p>' : ''}
-        ${status === 'cancelled' ? '<p>Your order has been cancelled. If you have questions, please contact support.</p>' : ''}
+        ${status === "shipped" ? "<p>Your order is on its way! 🚚</p>" : ""}
+        ${status === "delivered" ? "<p>Your order has been delivered! Enjoy your purchase! 🎉</p>" : ""}
+        ${status === "cancelled" ? "<p>Your order has been cancelled. If you have questions, please contact support.</p>" : ""}
         <br>
         <p>Best regards,<br>E-Commerce Team</p>
       </div>
@@ -96,35 +98,27 @@ export const emailTemplates = {
   }),
 };
 
-// Send email function with error handling
-export const sendEmail = async (to: string, template: { subject: string; html: string }): Promise<boolean> => {
+export const sendEmail = async (
+  to: string,
+  template: { subject: string; html: string }
+): Promise<boolean> => {
   try {
-    // Skip sending emails if credentials are not configured
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.log('📧 Email not sent (credentials not configured):', template.subject);
-      console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'Set' : 'Not set');
-      console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? 'Set' : 'Not set');
+      console.log("📧 Email not sent (credentials not configured):", template.subject);
       return false;
     }
 
-    console.log('📧 Attempting to send email to:', to);
-    console.log('📧 Email subject:', template.subject);
-    console.log('📧 Using host:', process.env.EMAIL_HOST);
-    console.log('📧 Using port:', process.env.EMAIL_PORT);
-
     const info = await transporter.sendMail({
       from: `"E-Commerce API" <${process.env.EMAIL_USER}>`,
-      to: to,
+      to,
       subject: template.subject,
       html: template.html,
     });
 
-    console.log('📧 Email sent successfully:', info.messageId);
+    console.log("📧 Email sent successfully:", info.messageId);
     return true;
   } catch (error: any) {
-    console.error(' Email sending failed:', error.message);
-    console.error(' Full error:', error);
-    // Don't throw error - email failures should not crash the API
+    console.error("Email sending failed:", error.message);
     return false;
   }
 };
