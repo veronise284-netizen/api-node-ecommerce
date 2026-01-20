@@ -29,7 +29,9 @@ export const register = async (req: AuthRequest, res: Response): Promise<void> =
     });
 
     // Send welcome email (don't wait for it)
-    sendEmail(user.email, emailTemplates.welcome(user.firstName));
+    sendEmail(user.email, emailTemplates.welcome(user.firstName)).catch(err => {
+      console.error('Failed to send welcome email:', err);
+    });
 
     res.status(201).json({
       success: true,

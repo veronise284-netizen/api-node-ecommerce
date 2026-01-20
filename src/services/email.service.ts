@@ -104,8 +104,15 @@ export const sendEmail = async (to: string, template: { subject: string; html: s
     // Skip sending emails if credentials are not configured
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.log('📧 Email not sent (credentials not configured):', template.subject);
+      console.log('EMAIL_USER:', process.env.EMAIL_USER ? 'Set' : 'Not set');
+      console.log('EMAIL_PASS:', process.env.EMAIL_PASS ? 'Set' : 'Not set');
       return false;
     }
+
+    console.log('📧 Attempting to send email to:', to);
+    console.log('📧 Email subject:', template.subject);
+    console.log('📧 Using host:', process.env.EMAIL_HOST);
+    console.log('📧 Using port:', process.env.EMAIL_PORT);
 
     const info = await transporter.sendMail({
       from: `"E-Commerce API" <${process.env.EMAIL_USER}>`,
@@ -118,6 +125,7 @@ export const sendEmail = async (to: string, template: { subject: string; html: s
     return true;
   } catch (error: any) {
     console.error('❌ Email sending failed:', error.message);
+    console.error('❌ Full error:', error);
     // Don't throw error - email failures should not crash the API
     return false;
   }
