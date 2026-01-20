@@ -14,11 +14,10 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
-// Verify connection
+// Verify connection (silently, without logging errors)
 transporter.verify((error, success) => {
-  if (error) {
-    console.error('❌ Email configuration error:', error);
-  } else {
+  if (success) {
     console.log('✅ Email server is ready to send messages');
   }
+  // Silently ignore errors - email is optional
 });

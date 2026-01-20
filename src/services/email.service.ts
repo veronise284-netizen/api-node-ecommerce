@@ -25,9 +25,7 @@ const sendEmail = async (options: EmailOptions): Promise<void> => {
     const info = await transporter.sendMail(mailOptions);
     console.log('✅ Email sent:', info.messageId);
   } catch (error) {
-    console.error('❌ Email sending failed:', error instanceof Error ? error.message : error);
-    // Don't throw error - allow the application to continue
-    // Email failure should not break user registration or other operations
+    // Silently fail - email is optional and shouldn't break the application
   }
 };
 
