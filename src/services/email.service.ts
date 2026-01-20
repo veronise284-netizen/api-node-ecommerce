@@ -1,16 +1,17 @@
 import nodemailer from "nodemailer";
-import sgMail from '@sendgrid/mail';
+import sgMail from "@sendgrid/mail";
 
 // Check which email service to use
 const useSendGrid = !!process.env.SENDGRID_API_KEY;
 
 // Configure SendGrid if API key is present
 if (useSendGrid) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
-  console.log('📧 Using SendGrid for email delivery');
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
+  console.log("📧 Using SendGrid for email delivery");
 }
 
-const port = parseInt(process.env.EMAIL_PORT || "465");
+// Default to 587 for better cloud compatibility
+const port = parseInt(process.env.EMAIL_PORT || "587");
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || "smtp.gmail.com",
@@ -117,11 +118,14 @@ export const sendEmail = async (
     if (useSendGrid) {
       await sgMail.send({
         to,
-        from: process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_USER || 'noreply@example.com',
+        from:
+          process.env.SENDGRID_FROM_EMAIL ||
+          process.env.EMAIL_USER ||
+          "noreply@example.com",
         subject: template.subject,
         html: template.html,
       });
-      console.log('📧 Email sent successfully via SendGrid');
+      console.log("📧 Email sent successfully via SendGrid");
       return true;
     }
 
