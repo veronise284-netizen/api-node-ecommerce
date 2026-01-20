@@ -33,7 +33,7 @@ export const uploadProductImages = async (req: AuthRequest, res: Response): Prom
 
     // Get file URLs
     const files = Array.isArray(req.files) ? req.files : [];
-    const imageUrls = files.map((file: Express.Multer.File) => getFileUrl(req, file.filename));
+    const imageUrls = files.map((file: Express.Multer.File) => getFileUrl(req, file));
 
     // Add images to product
     const existingImages = product.images || [];
@@ -83,12 +83,9 @@ export const deleteProductImage = async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    // Delete file from filesystem
+    // Delete file from storage (Cloudinary or local)
     const imageUrl = product.images[index];
-    const filename = imageUrl.split('/').pop();
-    if (filename) {
-      deleteFile(filename);
-    }
+    await deleteFile(imageUrl);
 
     // Remove image from product
     const updatedImages = product.images.filter((_, i) => i !== index);

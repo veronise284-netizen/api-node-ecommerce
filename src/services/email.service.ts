@@ -1,6 +1,5 @@
 import nodemailer from 'nodemailer';
 
-// Create transporter
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.EMAIL_PORT || '465'),
@@ -11,7 +10,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Email templates
 export const emailTemplates = {
   welcome: (firstName: string) => ({
     subject: 'Welcome to E-Commerce API',
@@ -124,8 +122,8 @@ export const sendEmail = async (to: string, template: { subject: string; html: s
     console.log('📧 Email sent successfully:', info.messageId);
     return true;
   } catch (error: any) {
-    console.error('❌ Email sending failed:', error.message);
-    console.error('❌ Full error:', error);
+    console.error(' Email sending failed:', error.message);
+    console.error(' Full error:', error);
     // Don't throw error - email failures should not crash the API
     return false;
   }

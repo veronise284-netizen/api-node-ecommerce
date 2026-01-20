@@ -418,15 +418,12 @@ export const uploadProfilePicture = async (req: AuthRequest, res: Response): Pro
     // Delete old profile picture if exists
     if (user.profilePicture) {
       const { deleteFile } = require('../middlewares/upload.middleware');
-      const oldFilename = user.profilePicture.split('/').pop();
-      if (oldFilename) {
-        deleteFile(oldFilename);
-      }
+      await deleteFile(user.profilePicture);
     }
 
     // Save new profile picture URL
     const { getFileUrl } = require('../middlewares/upload.middleware');
-    user.profilePicture = getFileUrl(req, req.file.filename);
+    user.profilePicture = getFileUrl(req, req.file);
     await user.save();
 
     res.json({
