@@ -1,4 +1,14 @@
 import nodemailer from "nodemailer";
+import sgMail from '@sendgrid/mail';
+
+// Check which email service to use
+const useSendGrid = !!process.env.SENDGRID_API_KEY;
+
+// Configure SendGrid if API key is present
+if (useSendGrid) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+  console.log('📧 Using SendGrid for email delivery');
+}
 
 const port = parseInt(process.env.EMAIL_PORT || "465");
 
@@ -103,6 +113,19 @@ export const sendEmail = async (
   template: { subject: string; html: string }
 ): Promise<boolean> => {
   try {
+    // Use SendGrid if configured
+    if (useSendGrid) {
+      await sgMail.send({
+        to,
+        from: process.env.SENDGRID_FROM_EMAIL || process.env.EMAIL_USER || 'noreply@example.com',
+        subject: template.subject,
+        html: template.html,
+      });
+      console.log('📧 Email sent successfully via SendGrid');
+      return true;
+    }
+
+    // Fallback to SMTP
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.log("📧 Email not sent (credentials not configured):", template.subject);
       return false;
