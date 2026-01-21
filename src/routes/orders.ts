@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as OrderController from '../controllers/order.controller';
-import { authenticate } from '../middlewares/auth.middleware';
+import { authenticate, requireCustomer } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -10,51 +10,9 @@ const router = Router();
  *   post:
  *     summary: Create a new order
  *     tags: [Orders]
- *     description: Place a new order from the shopping cart
+ *     description: Place a new order from the authenticated user's cart (no request body required)
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - items
- *               - shippingAddress
- *             properties:
- *               items:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     product:
- *                       type: string
- *                       example: 507f1f77bcf86cd799439011
- *                     quantity:
- *                       type: number
- *                       example: 2
- *                     price:
- *                       type: number
- *                       example: 99.99
- *               shippingAddress:
- *                 type: object
- *                 properties:
- *                   street:
- *                     type: string
- *                     example: 123 Main St
- *                   city:
- *                     type: string
- *                     example: New York
- *                   state:
- *                     type: string
- *                     example: NY
- *                   zipCode:
- *                     type: string
- *                     example: 10001
- *                   country:
- *                     type: string
- *                     example: USA
  *     responses:
  *       201:
  *         description: Order created successfully
@@ -78,7 +36,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.post('/', authenticate, OrderController.createOrder);
+router.post('/', authenticate, requireCustomer, OrderController.createOrder);
 
 /**
  * @swagger
@@ -112,7 +70,7 @@ router.post('/', authenticate, OrderController.createOrder);
  *       500:
  *         description: Server error
  */
-router.get('/', authenticate, OrderController.getMyOrders);
+router.get('/', authenticate, requireCustomer, OrderController.getMyOrders);
 
 /**
  * @swagger
@@ -147,7 +105,7 @@ router.get('/', authenticate, OrderController.getMyOrders);
  *       500:
  *         description: Server error
  */
-router.get('/:id', authenticate, OrderController.getOrderById);
+router.get('/:id', authenticate, requireCustomer, OrderController.getOrderById);
 
 /**
  * @swagger
@@ -193,6 +151,6 @@ router.get('/:id', authenticate, OrderController.getOrderById);
  *       500:
  *         description: Server error
  */
-router.patch('/:id/cancel', authenticate, OrderController.cancelOrder);
+router.patch('/:id/cancel', authenticate, requireCustomer, OrderController.cancelOrder);
 
 export default router;

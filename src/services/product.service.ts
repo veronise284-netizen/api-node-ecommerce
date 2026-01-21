@@ -1,4 +1,6 @@
 import { Product, IProduct } from '../models/product.model';
+import { Category } from '../models/category.model';
+import mongoose from 'mongoose';
 
 interface ProductFilters {
   category?: string;
@@ -18,6 +20,19 @@ export const createProduct = async (productData: Partial<IProduct>): Promise<IPr
   return await product.save();
 };
 
+const resolveCategoryId = async (category?: string) => {
+  if (!category) {
+    return undefined;
+  }
+
+  if (mongoose.isValidObjectId(category)) {
+    return new mongoose.Types.ObjectId(category);
+  }
+
+  const categoryDoc = await Category.findOne({ slug: category });
+  return categoryDoc ? categoryDoc._id : undefined;
+};
+
 export const getAllProducts = async (
   filters: ProductFilters = {},
   pagination: PaginationOptions = {}
@@ -25,7 +40,19 @@ export const getAllProducts = async (
   const query: any = {};
   
   if (filters.category) {
-    query.category = filters.category;
+    const categoryId = await resolveCategoryId(filters.category);
+    if (!categoryId) {
+      return {
+        products: [],
+        pagination: {
+          page: pagination.page || 1,
+          limit: pagination.limit || 10,
+          total: 0,
+          pages: 0
+        }
+      };
+    }
+    query.category = categoryId;
   }
   
   if (filters.inStock !== undefined) {
@@ -56,7 +83,9 @@ export const getAllProducts = async (
   const products = await Product.find(query)
     .sort({ createdAt: -1 })
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .populate('category', 'name slug')
+    .populate('createdBy', 'firstName lastName');
 
   const total = await Product.countDocuments(query);
 
@@ -72,7 +101,7 @@ export const getAllProducts = async (
 };
 
 export const getProductById = async (id: string): Promise<IProduct | null> => {
-  return await Product.findById(id);
+  return await Product.findById(id).populate('category', 'name slug');
 };
 
 export const updateProduct = async (
@@ -114,13 +143,44 @@ export const getCategoryStats = async () => {
       }
     },
     {
+      $lookup: {
+        from: 'categories',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'category'
+      }
+    },
+    {
+      $unwind: {
+        path: '$category',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        categoryId: '$_id',
+        category: '$category.name',
+        slug: '$category.slug',
+        count: 1,
+        avgPrice: { $round: ['$avgPrice', 2] },
+        totalQuantity: 1
+      }
+    },
+    {
       $sort: { count: -1 }
     }
   ]);
 };
 
 export const getProductsByCategory = async (category: string): Promise<IProduct[]> => {
-  return await Product.find({ category }).sort({ name: 1 });
+  const categoryId = await resolveCategoryId(category);
+  if (!categoryId) {
+    return [];
+  }
+  return await Product.find({ category: categoryId })
+    .sort({ name: 1 })
+    .populate('category', 'name slug');
 };
 
 export const getInStockProducts = async (): Promise<IProduct[]> => {

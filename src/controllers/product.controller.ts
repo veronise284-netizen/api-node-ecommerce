@@ -3,6 +3,7 @@ import { AuthRequest } from '../middlewares/auth.middleware';
 import * as ProductService from '../services/product.service';
 import { deleteFile, getFileUrl } from '../middlewares/upload.middleware';
 import { Product } from '../models/product.model';
+import { Category } from '../models/category.model';
 import { getPaginationParams, getPaginationMeta } from '../utils/pagination.helper';
 import { successResponse, errorResponse, paginatedResponse } from '../utils/response.helper';
 import mongoose from 'mongoose';
@@ -22,7 +23,19 @@ export const getAllProducts = async (req: Request, res: Response): Promise<void>
 
     // Category filter
     if (req.query.category) {
-      filter.category = req.query.category;
+      const categoryValue = req.query.category as string;
+      if (mongoose.isValidObjectId(categoryValue)) {
+        filter.category = new mongoose.Types.ObjectId(categoryValue);
+      } else {
+        const categoryDoc = await Category.findOne({ slug: categoryValue });
+        if (!categoryDoc) {
+          res.status(200).json(
+            paginatedResponse([], getPaginationMeta(0, page, limit))
+          );
+          return;
+        }
+        filter.category = categoryDoc._id;
+      }
     }
 
     // Stock filter
@@ -70,7 +83,8 @@ export const getAllProducts = async (req: Request, res: Response): Promise<void>
     const products = await query
       .skip(skip)
       .limit(limit)
-      .populate('createdBy', 'firstName lastName');
+      .populate('createdBy', 'firstName lastName')
+      .populate('category', 'name slug');
 
     const totalItems = await Product.countDocuments(
       req.query.search 
@@ -115,16 +129,33 @@ export const getProductStats = async (req: Request, res: Response): Promise<void
           totalQuantity: { $sum: '$quantity' }
         }
       },
+      // Stage 3: Join category details
+      {
+        $lookup: {
+          from: 'categories',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'category'
+        }
+      },
+      {
+        $unwind: {
+          path: '$category',
+          preserveNullAndEmptyArrays: true
+        }
+      },
       
-      // Stage 3: Sort - By total products (descending)
+      // Stage 4: Sort - By total products (descending)
       {
         $sort: { totalProducts: -1 }
       },
       
-      // Stage 4: Format - Clean output
+      // Stage 5: Format - Clean output
       {
         $project: {
-          category: '$_id',
+          categoryId: '$_id',
+          category: '$category.name',
+          slug: '$category.slug',
           totalProducts: 1,
           avgPrice: { $round: ['$avgPrice', 2] },
           minPrice: 1,

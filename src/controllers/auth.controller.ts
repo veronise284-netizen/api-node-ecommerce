@@ -7,6 +7,7 @@ import {
   sendPasswordChangedEmail 
 } from '../services/email.service';
 import { User } from '../models/user.model';
+import { deleteFile } from '../middlewares/upload.middleware';
 
 // @desc    Register new user
 // @route   POST /api/auth/register
@@ -285,8 +286,12 @@ export const forgotPassword = async (req: AuthRequest, res: Response): Promise<v
 
 export const resetPassword = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { token } = req.params;
-    const { newPassword } = req.body;
+    const { token, newPassword } = req.body;
+
+    if (!token) {
+      res.status(400).json({ message: 'Reset token is required' });
+      return;
+    }
 
     if (!newPassword) {
       res.status(400).json({ message: 'Please provide new password' });
@@ -354,12 +359,21 @@ export const deleteUser = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    const deleted = await AuthService.deleteUser(id);
-
-    if (!deleted) {
+    const user = await User.findById(id);
+    if (!user) {
       res.status(404).json({ message: 'User not found' });
       return;
     }
+
+    if (user.profilePicture) {
+      try {
+        await deleteFile(user.profilePicture);
+      } catch (err) {
+        console.error('Failed to delete profile picture:', err);
+      }
+    }
+
+    await user.deleteOne();
 
     res.status(200).json({
       success: true,

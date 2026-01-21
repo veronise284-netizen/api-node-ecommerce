@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as CartController from '../controllers/cart.controller';
-import { authenticate } from '../middlewares/auth.middleware';
+import { authenticate, requireCustomer } from '../middlewares/auth.middleware';
 
 const router = Router();
 
@@ -29,7 +29,7 @@ const router = Router();
  *         $ref: '#/components/responses/UnauthorizedError'
  */
 // All cart routes require authentication
-router.get('/', authenticate, CartController.getCart);
+router.get('/', authenticate, requireCustomer, CartController.getCart);
 
 /**
  * @swagger
@@ -65,7 +65,7 @@ router.get('/', authenticate, CartController.getCart);
  *       404:
  *         description: Product not found
  */
-router.post('/', authenticate, CartController.addItemToCart);
+router.post('/', authenticate, requireCustomer, CartController.addItemToCart);
 
 /**
  * @swagger
@@ -108,7 +108,7 @@ router.post('/', authenticate, CartController.addItemToCart);
  *       404:
  *         description: Product not found in cart
  */
-router.put('/:productId', authenticate, CartController.updateCartItem);
+router.put('/:productId', authenticate, requireCustomer, CartController.updateCartItem);
 
 /**
  * @swagger
@@ -143,7 +143,7 @@ router.put('/:productId', authenticate, CartController.updateCartItem);
  *       404:
  *         description: Product not found in cart
  */
-router.delete('/:productId', authenticate, CartController.removeCartItem);
+router.delete('/:productId', authenticate, requireCustomer, CartController.removeCartItem);
 
 /**
  * @swagger
@@ -165,6 +165,6 @@ router.delete('/:productId', authenticate, CartController.removeCartItem);
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.delete('/', authenticate, CartController.clearCart);
+router.delete('/', authenticate, requireCustomer, CartController.clearCart);
 
 export default router;

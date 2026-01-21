@@ -5,7 +5,34 @@ import { getUserReviews } from '../controllers/review.controller';
 
 const router = Router();
 
-// User reviews route
+/**
+ * @swagger
+ * /api/v1/users/me/reviews:
+ *   get:
+ *     summary: Get my reviews (with product info)
+ *     tags: [Users]
+ *     description: Retrieve reviews created by the authenticated user, populated with product details
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *           default: 10
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: Reviews retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ */
 router.get("/me/reviews", authenticate, getUserReviews);
 
 /**

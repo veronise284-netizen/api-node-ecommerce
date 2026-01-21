@@ -24,6 +24,10 @@ const swaggerOptions: SwaggerOptions = {
     },
     servers: [
       {
+        url: 'http://localhost:3000',
+        description: 'local development server'
+      },
+      {
         url: 'https://api-node-ecommerce-0mh7.onrender.com',
         description: 'production server'
 
@@ -61,6 +65,10 @@ const swaggerOptions: SwaggerOptions = {
       {
         name: 'Admin',
         description: 'Admin-only operations'
+      },
+      {
+        name: 'Reviews',
+        description: 'Product reviews and ratings'
       }
     ],
     components: {
@@ -243,13 +251,24 @@ const swaggerOptions: SwaggerOptions = {
               format: 'float',
               example: 1299.99
             },
-            categoryId: {
+            category: {
               type: 'string',
+              description: 'Category ID',
               example: '507f1f77bcf86cd799439011'
             },
-            stock: {
+            inStock: {
+              type: 'boolean',
+              example: true
+            },
+            quantity: {
               type: 'number',
               example: 50
+            },
+            images: {
+              type: 'array',
+              items: {
+                type: 'string'
+              }
             },
             createdBy: {
               type: 'string',
@@ -268,7 +287,7 @@ const swaggerOptions: SwaggerOptions = {
         },
         ProductRequest: {
           type: 'object',
-          required: ['name', 'price', 'categoryId', 'stock'],
+          required: ['name', 'price', 'category'],
           properties: {
             name: {
               type: 'string',
@@ -284,11 +303,16 @@ const swaggerOptions: SwaggerOptions = {
               example: 1299.99,
               minimum: 0
             },
-            categoryId: {
+            category: {
               type: 'string',
+              description: 'Category ID or slug',
               example: '507f1f77bcf86cd799439011'
             },
-            stock: {
+            inStock: {
+              type: 'boolean',
+              example: true
+            },
+            quantity: {
               type: 'number',
               example: 50,
               minimum: 0

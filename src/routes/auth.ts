@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as AuthController from '../controllers/auth.controller';
-import { authenticate } from '../middlewares/auth.middleware';
+import { authenticate, requireAdmin } from '../middlewares/auth.middleware';
 import { upload } from '../middlewares/upload.middleware';
 
 const router = Router();
@@ -347,8 +347,8 @@ router.put('/change-password', authenticate, AuthController.changePassword);
 router.post('/logout', authenticate, AuthController.logout);
 
 // User management routes (protected - admin functions)
-router.get('/users', authenticate, AuthController.getAllUsers);
-router.put('/users/:id', authenticate, AuthController.updateUser);
-router.delete('/users/:id', authenticate, AuthController.deleteUser);
+router.get('/users', authenticate, requireAdmin, AuthController.getAllUsers);
+router.put('/users/:id', authenticate, requireAdmin, AuthController.updateUser);
+router.delete('/users/:id', authenticate, requireAdmin, AuthController.deleteUser);
 
 export default router;

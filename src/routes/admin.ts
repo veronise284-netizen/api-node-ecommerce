@@ -6,7 +6,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/admin/orders:
+ * /api/v1/admin/orders:
  *   get:
  *     summary: Get all orders (Admin)
  *     tags: [Admin]
@@ -42,7 +42,7 @@ router.get('/orders', authenticate, requireAdmin, OrderController.getAllOrders);
 
 /**
  * @swagger
- * /api/admin/orders/statistics:
+ * /api/v1/admin/orders/statistics:
  *   get:
  *     summary: Get order statistics (Admin)
  *     tags: [Admin]
@@ -98,7 +98,7 @@ router.get('/orders/statistics', authenticate, requireAdmin, OrderController.get
 
 /**
  * @swagger
- * /api/admin/orders/{id}/status:
+ * /api/v1/admin/orders/{id}/status:
  *   patch:
  *     summary: Update order status (Admin)
  *     tags: [Admin]
@@ -124,7 +124,7 @@ router.get('/orders/statistics', authenticate, requireAdmin, OrderController.get
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [pending, processing, shipped, delivered, cancelled]
+ *                 enum: [pending, confirmed, shipped, delivered, cancelled]
  *                 example: shipped
  *     responses:
  *       200:

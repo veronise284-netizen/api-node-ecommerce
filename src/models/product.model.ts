@@ -4,7 +4,7 @@ export interface IProduct extends Document {
   name: string;
   price: number;
   description?: string;
-  category: string;
+  category: Types.ObjectId;
   inStock: boolean;
   quantity: number;
   images?: string[];
@@ -32,12 +32,9 @@ const ProductSchema = new Schema<IProduct>({
     maxlength: [500, 'Description cannot exceed 500 characters']
   },
   category: { 
-    type: String, 
+    type: Schema.Types.ObjectId, 
+    ref: 'Category',
     required: [true, 'Category is required'],
-    enum: {
-      values: ['electronics', 'clothing', 'books', 'home', 'sports'],
-      message: 'Category must be one of: electronics, clothing, books, home, sports'
-    },
     index: true // Index for category filtering
   },
   inStock: { 

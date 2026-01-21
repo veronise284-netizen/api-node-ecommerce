@@ -12,8 +12,15 @@ export const getOrCreateCart = async (userId: string): Promise<ICart> => {
   return cart;
 };
 
-export const getCart = async (userId: string): Promise<ICart | null> => {
-  return await Cart.findOne({ userId }).populate('items.productId', 'name price description inStock quantity');
+export const getCart = async (
+  userId: string,
+  session?: mongoose.ClientSession
+): Promise<ICart | null> => {
+  const query = Cart.findOne({ userId }).populate('items.productId', 'name price description inStock quantity');
+  if (session) {
+    query.session(session);
+  }
+  return await query;
 };
 
 export const addItemToCart = async (
@@ -118,8 +125,15 @@ export const removeCartItem = async (
   return await Cart.findOne({ userId }).populate('items.productId', 'name price description inStock quantity');
 };
 
-export const clearCart = async (userId: string): Promise<ICart | null> => {
-  const cart = await Cart.findOne({ userId });
+export const clearCart = async (
+  userId: string,
+  session?: mongoose.ClientSession
+): Promise<ICart | null> => {
+  const query = Cart.findOne({ userId });
+  if (session) {
+    query.session(session);
+  }
+  const cart = await query;
   
   if (!cart) {
     throw new Error('Cart not found');
@@ -128,7 +142,7 @@ export const clearCart = async (userId: string): Promise<ICart | null> => {
   cart.items = [];
   cart.totalAmount = 0;
 
-  await cart.save();
+  await cart.save({ session });
   return cart;
 };
 

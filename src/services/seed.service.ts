@@ -31,6 +31,10 @@ export const seedDatabase = async () => {
       { name: 'Sports', description: 'Sports and fitness equipment', slug: 'sports' }
     ];
     const categories = await Category.insertMany(categoryData);
+    const categoryBySlug: { [key: string]: string } = {};
+    for (const category of categories) {
+      categoryBySlug[category.slug] = category._id.toString();
+    }
     console.log(`✅ Created ${categories.length} categories\n`);
 
     // Seed users
@@ -114,7 +118,7 @@ export const seedDatabase = async () => {
         name: 'MacBook Pro 16"',
         price: 2499.99,
         description: 'High-performance laptop with M2 chip and 16GB RAM',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 15,
         createdBy: vendors[0]._id
@@ -123,7 +127,7 @@ export const seedDatabase = async () => {
         name: 'iPhone 15 Pro Max',
         price: 1999.99,
         description: 'Latest iPhone with advanced camera system',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 30,
         createdBy: vendors[0]._id
@@ -132,7 +136,7 @@ export const seedDatabase = async () => {
         name: 'Gaming Laptop RTX 4080',
         price: 1799.99,
         description: 'High-end gaming laptop with RGB keyboard',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 20,
         createdBy: vendors[1]._id
@@ -141,7 +145,7 @@ export const seedDatabase = async () => {
         name: '4K Monitor 32"',
         price: 599.99,
         description: 'Ultra HD 4K monitor with HDR support',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 45,
         createdBy: vendors[0]._id
@@ -150,7 +154,7 @@ export const seedDatabase = async () => {
         name: 'Wireless Earbuds Pro',
         price: 299.99,
         description: 'Premium wireless earbuds with noise cancellation',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 80,
         createdBy: vendors[1]._id
@@ -160,7 +164,7 @@ export const seedDatabase = async () => {
         name: 'Mechanical Keyboard',
         price: 149.99,
         description: 'RGB mechanical keyboard with blue switches',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 60,
         createdBy: vendors[2]._id
@@ -169,7 +173,7 @@ export const seedDatabase = async () => {
         name: 'Wireless Mouse Gaming',
         price: 79.99,
         description: 'High-precision wireless gaming mouse',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 100,
         createdBy: vendors[0]._id
@@ -178,7 +182,7 @@ export const seedDatabase = async () => {
         name: 'USB-C Hub 7-in-1',
         price: 49.99,
         description: 'Multi-port USB-C hub for laptops',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 150,
         createdBy: vendors[1]._id
@@ -188,7 +192,7 @@ export const seedDatabase = async () => {
         name: 'USB-C Cable 6ft',
         price: 12.99,
         description: 'Fast charging USB-C cable',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 500,
         createdBy: vendors[2]._id
@@ -197,7 +201,7 @@ export const seedDatabase = async () => {
         name: 'Phone Screen Protector',
         price: 9.99,
         description: 'Tempered glass screen protector',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 300,
         createdBy: vendors[0]._id
@@ -207,7 +211,7 @@ export const seedDatabase = async () => {
         name: 'Limited Edition Headphones',
         price: 399.99,
         description: 'Premium over-ear headphones',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 5,
         createdBy: vendors[1]._id
@@ -216,7 +220,7 @@ export const seedDatabase = async () => {
         name: 'Vintage Camera',
         price: 899.99,
         description: 'Collectible vintage camera',
-        category: 'electronics',
+        category: categoryBySlug['electronics'],
         inStock: true,
         quantity: 3,
         createdBy: vendors[2]._id
@@ -226,7 +230,7 @@ export const seedDatabase = async () => {
         name: 'Premium Leather Jacket',
         price: 299.99,
         description: 'Genuine leather jacket in black',
-        category: 'clothing',
+        category: categoryBySlug['clothing'],
         inStock: true,
         quantity: 35,
         createdBy: vendors[1]._id
@@ -235,7 +239,7 @@ export const seedDatabase = async () => {
         name: 'Designer Jeans',
         price: 89.99,
         description: 'Slim fit designer jeans',
-        category: 'clothing',
+        category: categoryBySlug['clothing'],
         inStock: true,
         quantity: 120,
         createdBy: vendors[2]._id
@@ -244,7 +248,7 @@ export const seedDatabase = async () => {
         name: 'Cotton T-Shirt Pack',
         price: 29.99,
         description: 'Pack of 3 premium cotton t-shirts',
-        category: 'clothing',
+        category: categoryBySlug['clothing'],
         inStock: true,
         quantity: 200,
         createdBy: vendors[0]._id
@@ -253,7 +257,7 @@ export const seedDatabase = async () => {
         name: 'Running Shoes',
         price: 129.99,
         description: 'Professional running shoes',
-        category: 'clothing',
+        category: categoryBySlug['clothing'],
         inStock: true,
         quantity: 75,
         createdBy: vendors[1]._id
@@ -262,7 +266,7 @@ export const seedDatabase = async () => {
         name: 'Winter Coat',
         price: 199.99,
         description: 'Warm winter coat with hood',
-        category: 'clothing',
+        category: categoryBySlug['clothing'],
         inStock: true,
         quantity: 8,
         createdBy: vendors[2]._id
@@ -272,7 +276,7 @@ export const seedDatabase = async () => {
         name: 'JavaScript: The Good Parts',
         price: 39.99,
         description: 'Essential JavaScript programming book',
-        category: 'books',
+        category: categoryBySlug['books'],
         inStock: true,
         quantity: 45,
         createdBy: vendors[0]._id
@@ -281,7 +285,7 @@ export const seedDatabase = async () => {
         name: 'Clean Code',
         price: 44.99,
         description: 'A handbook of agile software craftsmanship',
-        category: 'books',
+        category: categoryBySlug['books'],
         inStock: true,
         quantity: 60,
         createdBy: vendors[1]._id
@@ -290,7 +294,7 @@ export const seedDatabase = async () => {
         name: 'The Pragmatic Programmer',
         price: 49.99,
         description: 'Your journey to mastery',
-        category: 'books',
+        category: categoryBySlug['books'],
         inStock: true,
         quantity: 40,
         createdBy: vendors[2]._id
@@ -299,7 +303,7 @@ export const seedDatabase = async () => {
         name: 'Design Patterns',
         price: 54.99,
         description: 'Elements of reusable object-oriented software',
-        category: 'books',
+        category: categoryBySlug['books'],
         inStock: true,
         quantity: 30,
         createdBy: vendors[0]._id
@@ -309,7 +313,7 @@ export const seedDatabase = async () => {
         name: 'Coffee Maker Deluxe',
         price: 149.99,
         description: 'Programmable coffee maker with thermal carafe',
-        category: 'home',
+        category: categoryBySlug['home'],
         inStock: true,
         quantity: 55,
         createdBy: vendors[1]._id
@@ -318,7 +322,7 @@ export const seedDatabase = async () => {
         name: 'Blender Pro',
         price: 89.99,
         description: 'High-speed blender for smoothies',
-        category: 'home',
+        category: categoryBySlug['home'],
         inStock: true,
         quantity: 70,
         createdBy: vendors[2]._id
@@ -327,7 +331,7 @@ export const seedDatabase = async () => {
         name: 'Vacuum Cleaner Robot',
         price: 399.99,
         description: 'Smart robot vacuum with app control',
-        category: 'home',
+        category: categoryBySlug['home'],
         inStock: true,
         quantity: 25,
         createdBy: vendors[0]._id
@@ -336,7 +340,7 @@ export const seedDatabase = async () => {
         name: 'Air Purifier',
         price: 249.99,
         description: 'HEPA air purifier for large rooms',
-        category: 'home',
+        category: categoryBySlug['home'],
         inStock: true,
         quantity: 7,
         createdBy: vendors[1]._id
@@ -346,7 +350,7 @@ export const seedDatabase = async () => {
         name: 'Yoga Mat Premium',
         price: 49.99,
         description: 'Extra thick yoga mat with carry strap',
-        category: 'sports',
+        category: categoryBySlug['sports'],
         inStock: true,
         quantity: 90,
         createdBy: vendors[2]._id
@@ -355,7 +359,7 @@ export const seedDatabase = async () => {
         name: 'Dumbbell Set',
         price: 299.99,
         description: 'Adjustable dumbbell set 5-50 lbs',
-        category: 'sports',
+        category: categoryBySlug['sports'],
         inStock: true,
         quantity: 35,
         createdBy: vendors[0]._id
@@ -364,7 +368,7 @@ export const seedDatabase = async () => {
         name: 'Resistance Bands Set',
         price: 24.99,
         description: 'Set of 5 resistance bands',
-        category: 'sports',
+        category: categoryBySlug['sports'],
         inStock: true,
         quantity: 150,
         createdBy: vendors[1]._id
@@ -373,7 +377,7 @@ export const seedDatabase = async () => {
         name: 'Treadmill Pro',
         price: 1299.99,
         description: 'Professional treadmill with touch screen',
-        category: 'sports',
+        category: categoryBySlug['sports'],
         inStock: true,
         quantity: 6,
         createdBy: vendors[2]._id
@@ -382,7 +386,7 @@ export const seedDatabase = async () => {
         name: 'Basketball Official',
         price: 34.99,
         description: 'Official size basketball',
-        category: 'sports',
+        category: categoryBySlug['sports'],
         inStock: true,
         quantity: 80,
         createdBy: vendors[0]._id

@@ -2,8 +2,9 @@ import { Router, Request, Response } from "express";
 import * as ProductService from '../services/product.service';
 import * as ProductController from '../controllers/product.controller';
 import { authenticate, requireVendorOrAdmin, AuthRequest } from '../middlewares/auth.middleware';
-import { upload } from '../middlewares/upload.middleware';
+import { upload, deleteFile } from '../middlewares/upload.middleware';
 import mongoose from 'mongoose';
+import { Category } from '../models/category.model';
 import { 
   getAllProducts,
   getProductStats,
@@ -16,9 +17,79 @@ import { getProductReviews } from '../controllers/review.controller';
 const router = Router();
 
 // Aggregation and statistics endpoints (must be before /:id routes)
+/**
+ * @swagger
+ * /api/v1/products/stats:
+ *   get:
+ *     summary: Get product statistics by category
+ *     tags: [Products]
+ *     description: Aggregated stats for in-stock products by category
+ *     responses:
+ *       200:
+ *         description: Statistics retrieved successfully
+ *       500:
+ *         description: Server error
+ */
 router.get('/stats', getProductStats);
+/**
+ * @swagger
+ * /api/v1/products/top:
+ *   get:
+ *     summary: Get top products by price
+ *     tags: [Products]
+ *     description: Retrieve top N most expensive in-stock products
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *           default: 10
+ *         description: Number of products to return
+ *     responses:
+ *       200:
+ *         description: Top products retrieved successfully
+ *       500:
+ *         description: Server error
+ */
 router.get('/top', getTopProducts);
-router.get('/low-stock', authenticate, getLowStockProducts);
+/**
+ * @swagger
+ * /api/v1/products/low-stock:
+ *   get:
+ *     summary: Get low stock products
+ *     tags: [Products]
+ *     description: Retrieve low-stock products (Admin or Vendor only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: threshold
+ *         schema:
+ *           type: number
+ *           default: 10
+ *         description: Stock threshold
+ *     responses:
+ *       200:
+ *         description: Low stock products retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Vendor or Admin access required
+ */
+router.get('/low-stock', authenticate, requireVendorOrAdmin, getLowStockProducts);
+/**
+ * @swagger
+ * /api/v1/products/price-distribution:
+ *   get:
+ *     summary: Get product price distribution
+ *     tags: [Products]
+ *     description: Price range distribution for products
+ *     responses:
+ *       200:
+ *         description: Price distribution retrieved successfully
+ *       500:
+ *         description: Server error
+ */
 router.get('/price-distribution', getPriceDistribution);
 
 /**
@@ -33,7 +104,7 @@ router.get('/price-distribution', getPriceDistribution);
  *         name: category
  *         schema:
  *           type: string
- *         description: Filter by category ID
+ *         description: Filter by category ID or slug
  *       - in: query
  *         name: minPrice
  *         schema:
@@ -148,7 +219,41 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-// Product reviews route
+/**
+ * @swagger
+ * /api/v1/products/{productId}/reviews:
+ *   get:
+ *     summary: Get product reviews
+ *     tags: [Products]
+ *     description: Retrieve reviews for a specific product with user info
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *         example: 507f1f77bcf86cd799439011
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *           default: 10
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: Reviews retrieved successfully
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
 router.get("/:productId/reviews", getProductReviews);
 
 /**
@@ -182,6 +287,7 @@ router.get("/:productId/reviews", getProductReviews);
  *                 example: High-quality wireless headphones with noise cancellation
  *               category:
  *                 type: string
+ *                 description: Category ID or slug
  *                 example: 507f1f77bcf86cd799439011
  *               inStock:
  *                 type: boolean
@@ -219,11 +325,24 @@ router.post("/", authenticate, requireVendorOrAdmin, async (req: AuthRequest, re
       return res.status(400).json({ message: "price must be greater than 0" });
     }
 
+    let categoryId: mongoose.Types.ObjectId | null = null;
+    if (mongoose.isValidObjectId(category)) {
+      const categoryDoc = await Category.findById(category);
+      categoryId = categoryDoc ? categoryDoc._id : null;
+    } else {
+      const categoryDoc = await Category.findOne({ slug: category });
+      categoryId = categoryDoc ? categoryDoc._id : null;
+    }
+
+    if (!categoryId) {
+      return res.status(400).json({ message: "Invalid category. Provide a valid category ID or slug." });
+    }
+
     const productData = {
       name,
       price,
       description,
-      category,
+      category: categoryId,
       inStock: inStock ?? true,
       quantity: quantity ?? 0,
       createdBy: new mongoose.Types.ObjectId(req.user!.id) // Track who created the product
@@ -294,6 +413,18 @@ router.delete("/:id", authenticate, requireVendorOrAdmin, async (req: AuthReques
       }
     }
 
+    if (product.images && product.images.length > 0) {
+      await Promise.all(
+        product.images.map(async (imageUrl) => {
+          try {
+            await deleteFile(imageUrl);
+          } catch (err) {
+            console.error('Failed to delete product image:', err);
+          }
+        })
+      );
+    }
+
     const deleted = await ProductService.deleteProduct(req.params.id);
     
     res.status(200).json({ 
@@ -343,6 +474,7 @@ router.delete("/:id", authenticate, requireVendorOrAdmin, async (req: AuthReques
  *                 example: Updated description for wireless headphones
  *               category:
  *                 type: string
+ *                 description: Category ID or slug
  *                 example: 507f1f77bcf86cd799439011
  *               inStock:
  *                 type: boolean
@@ -404,7 +536,21 @@ router.put("/:id", authenticate, requireVendorOrAdmin, async (req: AuthRequest, 
     if (name !== undefined) updateData.name = name;
     if (price !== undefined) updateData.price = price;
     if (description !== undefined) updateData.description = description;
-    if (category !== undefined) updateData.category = category;
+    if (category !== undefined) {
+      let categoryId: mongoose.Types.ObjectId | null = null;
+      if (mongoose.isValidObjectId(category)) {
+        const categoryDoc = await Category.findById(category);
+        categoryId = categoryDoc ? categoryDoc._id : null;
+      } else {
+        const categoryDoc = await Category.findOne({ slug: category });
+        categoryId = categoryDoc ? categoryDoc._id : null;
+      }
+
+      if (!categoryId) {
+        return res.status(400).json({ message: "Invalid category. Provide a valid category ID or slug." });
+      }
+      updateData.category = categoryId;
+    }
     if (inStock !== undefined) updateData.inStock = inStock;
     if (quantity !== undefined) updateData.quantity = quantity;
 
@@ -432,14 +578,14 @@ router.put("/:id", authenticate, requireVendorOrAdmin, async (req: AuthRequest, 
  *   get:
  *     summary: Get products by category
  *     tags: [Products]
- *     description: Retrieve all products in a specific category
+ *     description: Retrieve all products in a specific category (ID or slug)
  *     parameters:
  *       - in: path
  *         name: category
  *         required: true
  *         schema:
  *           type: string
- *         description: Category ID
+ *         description: Category ID or slug
  *         example: 507f1f77bcf86cd799439011
  *     responses:
  *       200:

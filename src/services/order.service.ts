@@ -9,7 +9,7 @@ export const createOrderFromCart = async (userId: string): Promise<IOrder> => {
   session.startTransaction();
 
   try {
-    const cart = await CartService.getCart(userId);
+    const cart = await CartService.getCart(userId, session);
 
     if (!cart || !cart.items || cart.items.length === 0) {
       throw new Error('Cannot create order from empty cart');
@@ -56,7 +56,7 @@ export const createOrderFromCart = async (userId: string): Promise<IOrder> => {
     }], { session });
 
     // Clear cart
-    await CartService.clearCart(userId);
+    await CartService.clearCart(userId, session);
 
     // Commit transaction
     await session.commitTransaction();

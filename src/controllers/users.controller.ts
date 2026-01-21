@@ -1,5 +1,6 @@
 import type { Response, Request } from "express";
 import { User, IUser } from "../models/user.model";
+import { deleteFile } from '../middlewares/upload.middleware';
 import { getPaginationParams, getPaginationMeta } from '../utils/pagination.helper';
 import { successResponse, errorResponse, paginatedResponse } from '../utils/response.helper';
 
@@ -158,11 +159,21 @@ async function updateUserById(req: Request, res: Response) {
 async function deleteUserById(req: Request, res: Response) {
   try {
     const id = req.params.id;
-    const user = await User.findByIdAndDelete(id);
+    const user = await User.findById(id);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+
+    if (user.profilePicture) {
+      try {
+        await deleteFile(user.profilePicture);
+      } catch (err) {
+        console.error('Failed to delete profile picture:', err);
+      }
+    }
+
+    await user.deleteOne();
 
     return res.status(200).json({
       message: "User deleted successfully"
