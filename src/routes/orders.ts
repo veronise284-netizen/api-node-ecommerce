@@ -6,7 +6,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/orders:
+ * /api/v1/orders:
  *   post:
  *     summary: Create a new order
  *     tags: [Orders]
@@ -82,7 +82,7 @@ router.post('/', authenticate, OrderController.createOrder);
 
 /**
  * @swagger
- * /api/orders:
+ * /api/v1/orders:
  *   get:
  *     summary: Get my orders
  *     tags: [Orders]
@@ -116,7 +116,7 @@ router.get('/', authenticate, OrderController.getMyOrders);
 
 /**
  * @swagger
- * /api/orders/{id}:
+ * /api/v1/orders/{id}:
  *   get:
  *     summary: Get order by ID
  *     tags: [Orders]
@@ -151,7 +151,7 @@ router.get('/:id', authenticate, OrderController.getOrderById);
 
 /**
  * @swagger
- * /api/orders/{id}/cancel:
+ * /api/v1/orders/{id}/cancel:
  *   patch:
  *     summary: Cancel an order
  *     tags: [Orders]

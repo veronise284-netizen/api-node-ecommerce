@@ -7,7 +7,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/auth/register:
+ * /api/v1/auth/register:
  *   post:
  *     summary: Register a new user
  *     tags: [Authentication]
@@ -48,7 +48,7 @@ router.post('/register', AuthController.register);
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/v1/auth/login:
  *   post:
  *     summary: Login user
  *     tags: [Authentication]
@@ -88,7 +88,7 @@ router.post('/login', AuthController.login);
 
 /**
  * @swagger
- * /api/auth/forgot-password:
+ * /api/v1/auth/forgot-password:
  *   post:
  *     summary: Request password reset
  *     tags: [Authentication]
@@ -121,7 +121,7 @@ router.post('/forgot-password', AuthController.forgotPassword);
 
 /**
  * @swagger
- * /api/auth/reset-password:
+ * /api/v1/auth/reset-password:
  *   post:
  *     summary: Reset password with token
  *     tags: [Authentication]
@@ -164,7 +164,7 @@ router.post('/reset-password', AuthController.resetPassword);
 
 /**
  * @swagger
- * /api/auth/profile:
+ * /api/v1/auth/profile:
  *   get:
  *     summary: Get user profile
  *     tags: [Authentication]
@@ -190,7 +190,7 @@ router.get('/profile', authenticate, AuthController.getProfile);
 
 /**
  * @swagger
- * /api/auth/profile:
+ * /api/v1/auth/profile:
  *   put:
  *     summary: Update user profile
  *     tags: [Authentication]
@@ -235,7 +235,7 @@ router.put('/profile', authenticate, AuthController.updateProfile);
 
 /**
  * @swagger
- * /api/auth/profile/picture:
+ * /api/v1/auth/profile/picture:
  *   put:
  *     summary: Upload profile picture
  *     tags: [Authentication]
@@ -283,7 +283,7 @@ router.put('/profile/picture', authenticate, upload.single('profilePicture'), Au
 
 /**
  * @swagger
- * /api/auth/change-password:
+ * /api/v1/auth/change-password:
  *   put:
  *     summary: Change password
  *     tags: [Authentication]
@@ -326,7 +326,7 @@ router.put('/change-password', authenticate, AuthController.changePassword);
 
 /**
  * @swagger
- * /api/auth/logout:
+ * /api/v1/auth/logout:
  *   post:
  *     summary: Logout user
  *     tags: [Authentication]

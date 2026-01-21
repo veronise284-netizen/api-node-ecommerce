@@ -23,7 +23,7 @@ router.get('/price-distribution', getPriceDistribution);
 
 /**
  * @swagger
- * /api/products:
+ * /api/v1/products:
  *   get:
  *     summary: Get all products
  *     tags: [Products]
@@ -109,7 +109,7 @@ router.get("/", getAllProducts);
 
 /**
  * @swagger
- * /api/products/{id}:
+ * /api/v1/products/{id}:
  *   get:
  *     summary: Get product by ID
  *     tags: [Products]
@@ -153,7 +153,7 @@ router.get("/:productId/reviews", getProductReviews);
 
 /**
  * @swagger
- * /api/products:
+ * /api/v1/products:
  *   post:
  *     summary: Create a new product
  *     tags: [Products]
@@ -241,7 +241,7 @@ router.post("/", authenticate, requireVendorOrAdmin, async (req: AuthRequest, re
 
 /**
  * @swagger
- * /api/products/{id}:
+ * /api/v1/products/{id}:
  *   delete:
  *     summary: Delete a product
  *     tags: [Products]
@@ -310,7 +310,7 @@ router.delete("/:id", authenticate, requireVendorOrAdmin, async (req: AuthReques
 
 /**
  * @swagger
- * /api/products/{id}:
+ * /api/v1/products/{id}:
  *   put:
  *     summary: Update a product
  *     tags: [Products]
@@ -428,7 +428,7 @@ router.put("/:id", authenticate, requireVendorOrAdmin, async (req: AuthRequest, 
 
 /**
  * @swagger
- * /api/products/category/{category}:
+ * /api/v1/products/category/{category}:
  *   get:
  *     summary: Get products by category
  *     tags: [Products]
@@ -464,7 +464,7 @@ router.get("/category/:category", async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/products/stats/categories:
+ * /api/v1/products/stats/categories:
  *   get:
  *     summary: Get product statistics by category
  *     tags: [Products]
@@ -499,7 +499,7 @@ router.get("/stats/categories", async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /api/products/{id}/images:
+ * /api/v1/products/{id}/images:
  *   post:
  *     summary: Upload product images
  *     tags: [Products]
@@ -563,7 +563,7 @@ router.post("/:id/images", authenticate, requireVendorOrAdmin, upload.array('ima
 
 /**
  * @swagger
- * /api/products/{id}/images/{imageIndex}:
+ * /api/v1/products/{id}/images/{imageIndex}:
  *   delete:
  *     summary: Delete a product image
  *     tags: [Products]

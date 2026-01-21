@@ -6,7 +6,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/cart:
+ * /api/v1/cart:
  *   get:
  *     summary: Get user's cart
  *     tags: [Cart]
@@ -33,7 +33,7 @@ router.get('/', authenticate, CartController.getCart);
 
 /**
  * @swagger
- * /api/cart:
+ * /api/v1/cart:
  *   post:
  *     summary: Add item to cart
  *     tags: [Cart]
@@ -69,7 +69,7 @@ router.post('/', authenticate, CartController.addItemToCart);
 
 /**
  * @swagger
- * /api/cart/{productId}:
+ * /api/v1/cart/{productId}:
  *   put:
  *     summary: Update cart item quantity
  *     tags: [Cart]
@@ -112,7 +112,7 @@ router.put('/:productId', authenticate, CartController.updateCartItem);
 
 /**
  * @swagger
- * /api/cart/{productId}:
+ * /api/v1/cart/{productId}:
  *   delete:
  *     summary: Remove item from cart
  *     tags: [Cart]
@@ -147,7 +147,7 @@ router.delete('/:productId', authenticate, CartController.removeCartItem);
 
 /**
  * @swagger
- * /api/cart:
+ * /api/v1/cart:
  *   delete:
  *     summary: Clear cart
  *     tags: [Cart]

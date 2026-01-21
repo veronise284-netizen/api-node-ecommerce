@@ -10,7 +10,7 @@ router.get("/me/reviews", authenticate, getUserReviews);
 
 /**
  * @swagger
- * /api/users:
+ * /api/v1/users:
  *   get:
  *     summary: Get all users
  *     tags: [Users]
@@ -46,7 +46,7 @@ router.get("/", authenticate, requireAdmin, UsersController.getAllUsers);
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/v1/users/{id}:
  *   get:
  *     summary: Get user by ID
  *     tags: [Users]
@@ -81,7 +81,7 @@ router.get("/:id", authenticate, requireAdmin, UsersController.getUserById);
 
 /**
  * @swagger
- * /api/users:
+ * /api/v1/users:
  *   post:
  *     summary: Create a new user
  *     tags: [Users]
@@ -150,7 +150,7 @@ router.post("/", authenticate, requireAdmin, UsersController.createUser);
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/v1/users/{id}:
  *   put:
  *     summary: Update a user
  *     tags: [Users]
@@ -224,7 +224,7 @@ router.put("/:id", authenticate, requireAdmin, UsersController.updateUserById);
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/v1/users/{id}:
  *   delete:
  *     summary: Delete a user
  *     tags: [Users]
