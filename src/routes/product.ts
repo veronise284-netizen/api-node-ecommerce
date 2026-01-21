@@ -4,8 +4,22 @@ import * as ProductController from '../controllers/product.controller';
 import { authenticate, requireVendorOrAdmin, AuthRequest } from '../middlewares/auth.middleware';
 import { upload } from '../middlewares/upload.middleware';
 import mongoose from 'mongoose';
+import { 
+  getAllProducts,
+  getProductStats,
+  getTopProducts,
+  getLowStockProducts,
+  getPriceDistribution
+} from '../controllers/product.controller';
+import { getProductReviews } from '../controllers/review.controller';
 
 const router = Router();
+
+// Aggregation and statistics endpoints (must be before /:id routes)
+router.get('/stats', getProductStats);
+router.get('/top', getTopProducts);
+router.get('/low-stock', authenticate, getLowStockProducts);
+router.get('/price-distribution', getPriceDistribution);
 
 /**
  * @swagger
@@ -91,44 +105,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.get("/", async (req: Request, res: Response) => {
-  try {
-    const filters: any = {};
-    const pagination: any = {};
-    
-    if (req.query.category) {
-      filters.category = req.query.category;
-    }
-    if (req.query.minPrice) {
-      filters.minPrice = Number(req.query.minPrice);
-    }
-    if (req.query.maxPrice) {
-      filters.maxPrice = Number(req.query.maxPrice);
-    }
-    if (req.query.inStock !== undefined) {
-      filters.inStock = req.query.inStock === 'true';
-    }
-    if (req.query.search) {
-      filters.search = req.query.search;
-    }
-    if (req.query.page) {
-      pagination.page = Number(req.query.page);
-    }
-    if (req.query.limit) {
-      pagination.limit = Number(req.query.limit);
-    }
-    
-    const result = await ProductService.getAllProducts(filters, pagination);
-    res.json({
-      success: true,
-      count: result.products.length,
-      total: result.pagination.total,
-      ...result
-    });
-  } catch (error: any) {
-    res.status(500).json({ message: 'Error fetching products', error: error.message });
-  }
-});
+router.get("/", getAllProducts);
 
 /**
  * @swagger
@@ -170,6 +147,9 @@ router.get("/:id", async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error fetching product', error: error.message });
   }
 });
+
+// Product reviews route
+router.get("/:productId/reviews", getProductReviews);
 
 /**
  * @swagger

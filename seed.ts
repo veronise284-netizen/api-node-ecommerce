@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import { connectDB } from './src/config/db.connects';
 import { seedDatabase, clearDatabase } from './src/services/seed.service';
 
@@ -24,15 +25,25 @@ const runSeeder = async () => {
         await seedDatabase();
         break;
       default:
-        console.log('Available commands:');
+        console.log('\nAvailable commands:');
         console.log('  npm run seed       - Seed the database with sample data');
         console.log('  npm run seed:clear - Clear all data from database');
-        console.log('  npm run seed:reset - Clear and reseed the database');
+        console.log('  npm run seed:reset - Clear and reseed the database\n');
     }
 
+    // Close MongoDB connection
+    await mongoose.connection.close();
+    console.log('\n✅ MongoDB connection closed\n');
+    
     process.exit(0);
   } catch (error) {
-    console.error('Seeder error:', error);
+    console.error('❌ Seeder error:', error);
+    
+    // Close connection on error
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.connection.close();
+    }
+    
     process.exit(1);
   }
 };

@@ -1,18 +1,44 @@
 import type { Response, Request } from "express";
 import { User, IUser } from "../models/user.model";
+import { getPaginationParams, getPaginationMeta } from '../utils/pagination.helper';
+import { successResponse, errorResponse, paginatedResponse } from '../utils/response.helper';
 
 async function getAllUsers(req: Request, res: Response) {
   try {
-    const users = await User.find().select('-password'); // Exclude password from response
-    return res.status(200).json({
-      users: users,
-      count: users.length
-    });
+    const { page, limit, skip } = getPaginationParams(
+      req.query.page as string,
+      req.query.limit as string
+    );
+
+    // Build filter
+    const filter: any = {};
+    if (req.query.role) {
+      filter.role = req.query.role;
+    }
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
+
+    // Build sort
+    let sort: any = { createdAt: -1 };
+    if (req.query.sortBy) {
+      const sortField = req.query.sortBy as string;
+      const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+      sort = { [sortField]: sortOrder };
+    }
+
+    const users = await User.find(filter)
+      .select('-password')
+      .sort(sort)
+      .skip(skip)
+      .limit(limit);
+
+    const totalItems = await User.countDocuments(filter);
+    const pagination = getPaginationMeta(totalItems, page, limit);
+
+    return res.status(200).json(paginatedResponse(users, pagination, filter));
   } catch (error: any) {
-    return res.status(500).json({ 
-      error: "Error fetching users", 
-      message: error.message 
-    });
+    return res.status(500).json(errorResponse(error.message, 'Failed to fetch users'));
   }
 }
 

@@ -11,11 +11,13 @@ import cartRouter from "./cart";
 import usersRouter from "./users";
 import ordersRouter from "./orders";
 import adminRouter from "./admin";
+import reviewsRouter from "./reviews";
 
 const app = express();
 
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files statically
 app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
@@ -49,12 +51,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: 'E-Commerce API Documentation'
 }));
 
-app.use("/api/auth", authRouter);
-app.use("/api/categories", categoriesRouter);
-app.use("/api/products", productRouter);
-app.use("/api/cart", cartRouter);
-app.use("/api/users", usersRouter);
-app.use("/api/orders", ordersRouter);
-app.use("/api/admin", adminRouter);
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/categories", categoriesRouter);
+app.use("/api/v1/products", productRouter);
+app.use("/api/v1/cart", cartRouter);
+app.use("/api/v1/users", usersRouter);
+app.use("/api/v1/orders", ordersRouter);
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/reviews", reviewsRouter);
 
 export default app;

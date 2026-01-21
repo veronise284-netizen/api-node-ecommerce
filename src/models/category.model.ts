@@ -13,9 +13,10 @@ const CategorySchema = new Schema<ICategory>({
   name: {
     type: String,
     required: [true, 'Category name is required'],
-    unique: true,
+    unique: true, // Creates unique index
     trim: true,
-    maxlength: [50, 'Name cannot exceed 50 characters']
+    maxlength: [50, 'Name cannot exceed 50 characters'],
+    index: true
   },
   description: {
     type: String,
@@ -23,16 +24,21 @@ const CategorySchema = new Schema<ICategory>({
   },
   slug: {
     type: String,
-    unique: true,
-    lowercase: true
+    unique: true, // Creates unique index
+    lowercase: true,
+    index: true
   },
   isActive: {
     type: Boolean,
-    default: true
+    default: true,
+    index: true // Index for filtering active categories
   }
 }, {
   timestamps: true
 });
+
+// Text index for search
+CategorySchema.index({ name: 'text', description: 'text' });
 
 // Generate slug from name before saving
 CategorySchema.pre('save', function() {

@@ -37,7 +37,8 @@ const CartSchema = new Schema<ICart>({
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-    unique: true
+    unique: true, // Creates unique index
+    index: true
   },
   items: [CartItemSchema],
   totalAmount: {
@@ -48,6 +49,9 @@ const CartSchema = new Schema<ICart>({
 }, {
   timestamps: true
 });
+
+// Index for product lookups in cart
+CartSchema.index({ 'items.productId': 1 });
 
 // Calculate total amount before saving
 CartSchema.pre('save', function() {

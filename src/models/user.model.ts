@@ -29,22 +29,25 @@ const UserSchema = new Schema<IUser>({
     required: [true, 'First name is required'],
     minlength: [2, 'First name must be at least 2 characters'],
     maxlength: [50, 'First name cannot exceed 50 characters'],
-    trim: true
+    trim: true,
+    index: true // Simple index for search
   },
   lastName: {
     type: String,
     required: [true, 'Last name is required'],
     minlength: [2, 'Last name must be at least 2 characters'],
     maxlength: [50, 'Last name cannot exceed 50 characters'],
-    trim: true
+    trim: true,
+    index: true // Simple index for search
   },
   email: {
     type: String,
     required: [true, 'Email is required'],
-    unique: true,
+    unique: true, // Creates unique index
     lowercase: true,
     trim: true,
-    match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address']
+    match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address'],
+    index: true
   },
   password: {
     type: String,
@@ -72,7 +75,8 @@ const UserSchema = new Schema<IUser>({
       message: 'Role must be admin, vendor, or customer'
     },
     required: [true, 'Role is required'],
-    default: 'customer'
+    default: 'customer',
+    index: true // Index for role-based queries
   },
   profilePicture: {
     type: String,
@@ -88,6 +92,16 @@ const UserSchema = new Schema<IUser>({
   timestamps: true
 });
 
+// Compound index for full name searches
+UserSchema.index({ firstName: 1, lastName: 1 });
+
+// Text index for search functionality
+UserSchema.index({ firstName: 'text', lastName: 'text', email: 'text' });
+
+// Index for status queries
+UserSchema.index({ status: 1 });
+
+// Hash password before saving
 // Hash password before saving
 UserSchema.pre('save', async function() {
   if (!this.isModified('password')) {

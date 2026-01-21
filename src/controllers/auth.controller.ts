@@ -236,6 +236,21 @@ export const changePassword = async (req: AuthRequest, res: Response): Promise<v
 
 export const forgotPassword = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Debug logging
+    console.log('Forgot Password Request:', {
+      body: req.body,
+      headers: req.headers,
+      contentType: req.headers['content-type']
+    });
+
+    if (!req.body) {
+      res.status(400).json({ 
+        message: 'Request body is missing. Please send JSON data with Content-Type: application/json',
+        hint: 'Check Postman body settings - use raw JSON'
+      });
+      return;
+    }
+
     const { email } = req.body;
 
     if (!email) {

@@ -1,8 +1,12 @@
 import { Router, Request, Response } from "express";
 import * as UsersController from '../controllers/users.controller';
 import { authenticate, requireAdmin } from '../middlewares/auth.middleware';
+import { getUserReviews } from '../controllers/review.controller';
 
 const router = Router();
+
+// User reviews route
+router.get("/me/reviews", authenticate, getUserReviews);
 
 /**
  * @swagger

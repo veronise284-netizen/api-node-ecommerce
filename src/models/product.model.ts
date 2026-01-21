@@ -18,12 +18,14 @@ const ProductSchema = new Schema<IProduct>({
     type: String, 
     required: [true, 'Product name is required'],
     maxlength: [100, 'Name cannot exceed 100 characters'],
-    trim: true
+    trim: true,
+    index: true // Simple index for name queries
   },
   price: { 
     type: Number, 
     required: [true, 'Price is required'],
-    min: [0, 'Price cannot be negative']
+    min: [0, 'Price cannot be negative'],
+    index: true // Index for price range queries
   },
   description: {
     type: String,
@@ -35,11 +37,13 @@ const ProductSchema = new Schema<IProduct>({
     enum: {
       values: ['electronics', 'clothing', 'books', 'home', 'sports'],
       message: 'Category must be one of: electronics, clothing, books, home, sports'
-    }
+    },
+    index: true // Index for category filtering
   },
   inStock: { 
     type: Boolean, 
-    default: true 
+    default: true,
+    index: true // Index for stock filtering
   },
   quantity: { 
     type: Number, 
@@ -56,5 +60,13 @@ const ProductSchema = new Schema<IProduct>({
 }, {
   timestamps: true  
 });
+
+// Compound indexes for common query combinations
+ProductSchema.index({ category: 1, price: 1 }); // Category + price sorting
+ProductSchema.index({ inStock: 1, category: 1 }); // Stock status + category
+ProductSchema.index({ createdBy: 1, createdAt: -1 }); // Vendor products
+
+// Text index for search functionality
+ProductSchema.index({ name: 'text', description: 'text' });
 
 export const Product = mongoose.model<IProduct>('Product', ProductSchema);

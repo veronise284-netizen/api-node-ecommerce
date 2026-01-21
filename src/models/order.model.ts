@@ -77,8 +77,10 @@ const OrderSchema = new Schema<IOrder>({
   timestamps: true
 });
 
-// Index for efficient queries
-OrderSchema.index({ userId: 1, createdAt: -1 });
-OrderSchema.index({ status: 1 });
+// Indexes for efficient queries
+OrderSchema.index({ userId: 1, createdAt: -1 }); // User orders sorted by date
+OrderSchema.index({ status: 1 }); // Status filtering
+OrderSchema.index({ userId: 1, status: 1 }); // User + status combination
+OrderSchema.index({ 'items.productId': 1 }); // Product sales lookup
 
 export const Order = mongoose.model<IOrder>('Order', OrderSchema);
