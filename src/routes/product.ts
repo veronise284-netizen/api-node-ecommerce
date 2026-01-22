@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import * as ProductService from '../services/product.service';
 import * as ProductController from '../controllers/product.controller';
-import { authenticate, requireVendorOrAdmin, AuthRequest } from '../middlewares/auth.middleware';
+import { authenticate, requireVendorOrAdmin, requireCustomer, AuthRequest } from '../middlewares/auth.middleware';
 import { upload, deleteFile } from '../middlewares/upload.middleware';
 import mongoose from 'mongoose';
 import { Category } from '../models/category.model';
@@ -12,7 +12,7 @@ import {
   getLowStockProducts,
   getPriceDistribution
 } from '../controllers/product.controller';
-import { getProductReviews } from '../controllers/review.controller';
+import { createReview, getProductReviews } from '../controllers/review.controller';
 
 const router = Router();
 
@@ -255,6 +255,53 @@ router.get("/:id", async (req: Request, res: Response) => {
  *         description: Server error
  */
 router.get("/:productId/reviews", getProductReviews);
+/**
+ * @swagger
+ * /api/v1/products/{productId}/reviews:
+ *   post:
+ *     summary: Create a review for a product
+ *     tags: [Products]
+ *     description: Create a review for a specific product (Customer only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *         example: 507f1f77bcf86cd799439011
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rating
+ *               - comment
+ *             properties:
+ *               rating:
+ *                 type: number
+ *                 example: 5
+ *               comment:
+ *                 type: string
+ *                 example: Excellent product!
+ *     responses:
+ *       201:
+ *         description: Review created successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Product not found
+ */
+router.post("/:productId/reviews", authenticate, requireCustomer, (req: AuthRequest, res: Response) => {
+  req.body.productId = req.body.productId || req.params.productId;
+  return createReview(req, res);
+});
 
 /**
  * @swagger
